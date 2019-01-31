@@ -170,6 +170,7 @@
 }
 .edit-main-container {
   white-space: nowrap;
+  image-rendering: optimizespeed;
 }
 .edit-top-menu-block {
   display: inline-block;
