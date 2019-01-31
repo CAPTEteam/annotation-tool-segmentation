@@ -339,6 +339,9 @@ function (Layer, segmentation, morph) {
           if (annotator.mode === "brush" && event.button === 0) {
             annotator.brush(annotator._getClickPos(event), annotator.currentLabel);
           }
+          if (annotator.mode === "pixel" && event.button === 0) {
+            annotator.pixel(annotator._getClickPos(event), annotator.currentLabel);
+          }
           if (event.button === 0 && annotator.mode === "polygon") {
             annotator._addPolygonPoint(event);
             if (annotator._checkLineIntersection())
