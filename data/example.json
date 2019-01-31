@@ -1,0 +1,19 @@
+{
+	"labels": [
+		"Background",
+		"Vegetation",
+		"DontKnow"
+	],
+	"imageURLs": [
+		"data/images/2017-11-11 12h00_5a460ccbaf4aa40013f4d2e9_0.png",
+		"data/images/2017-11-11 12h00_5a460ccbaf4aa40013f4d2e9_1.png",
+		"data/images/2017-11-11 12h00_5a460ccbaf4aa40013f4d2e9_2.png",
+		"data/images/2017-11-11 12h00_5a460ccbaf4aa40013f4d2e9_3.png"
+	],
+	"annotationURLs": [
+		"data/annotations/2017-11-11 12h00_5a460ccbaf4aa40013f4d2e9_SEG_0.png",
+		"data/annotations/2017-11-11 12h00_5a460ccbaf4aa40013f4d2e9_SEG_1.png",
+		"data/annotations/2017-11-11 12h00_5a460ccbaf4aa40013f4d2e9_SEG_2.png",
+		"data/annotations/2017-11-11 12h00_5a460ccbaf4aa40013f4d2e9_SEG_3.png"
+	]
+}
