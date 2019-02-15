@@ -558,7 +558,6 @@ function(Layer, Annotator, util) {
           },
           onmousemove: highlightLabel
         }),
-        var project = document.getElementById("project").content
         imageLayer = new Layer(data.imageURLs[id].replace("data","data/"+project), {
           width: params.width,
           height: params.height
