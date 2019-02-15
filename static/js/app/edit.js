@@ -219,6 +219,7 @@ function(Layer, Annotator, util) {
     exportButton.value = "Save (erase former annotations)";
     exportButton.className = "edit-sidebar-submit";
     exportButton.addEventListener("click", function () {
+      var project = document.getElementById("project").content
       var filename = (data.annotationURLs) ?
           data.annotationURLs[params.id].split(/[\\/]/).pop() :
           params.id + ".png";
@@ -227,7 +228,8 @@ function(Layer, Annotator, util) {
             url:"/upload",
             data:{
             imageBase64 : annotator.export(),
-            filename:filename
+            filename:filename,
+            project : project
             }
           }).done(function(){console.log("sent")}); ;
     });
@@ -250,9 +252,10 @@ function(Layer, Annotator, util) {
 
     modelButton.className = "edit-sidebar-submit";
     modelButton.addEventListener("change", function () {
+      var project = document.getElementById("project").content
       var id = parseInt(params.id, 10);
         if (data.annotationURLs)
-              annotator.import(data.annotationURLs[id].replace("annotations",modelButton.value));
+              annotator.import(data.annotationURLs[id].replace("annotations",project+"/"+modelButton.value));
             annotator.hide("boundary");
             boundaryFlash();
     });
@@ -526,14 +529,16 @@ function(Layer, Annotator, util) {
     var id = parseInt(params.id, 10);
     if (isNaN(id))
       throw("Invalid id");
-    var annotator = new Annotator(data.imageURLs[id], {
+    var project = document.getElementById("project").content
+    var annotator = new Annotator(data.imageURLs[id].replace("data","data/"+project), {
           width: params.width,
           height: params.height,
           colormap: data.colormap,
           superpixelOptions: { method: "slic", regionSize: 25 },
           onload: function () {
             if (data.annotationURLs)
-              annotator.import(data.annotationURLs[id]);
+              var project = document.getElementById("project").content
+              annotator.import(data.annotationURLs[id].replace("data","data/"+project));
             annotator.hide("boundary");
             boundaryFlash();
           },
@@ -553,7 +558,8 @@ function(Layer, Annotator, util) {
           },
           onmousemove: highlightLabel
         }),
-        imageLayer = new Layer(data.imageURLs[id], {
+        var project = document.getElementById("project").content
+        imageLayer = new Layer(data.imageURLs[id].replace("data","data/"+project), {
           width: params.width,
           height: params.height
         });

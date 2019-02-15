@@ -10,17 +10,18 @@ from werkzeug import secure_filename
 app = Flask(__name__, static_url_path='')
 app.debug= True
 
-@app.route("/")
+@app.route("/<project>")
 def hello():
-    return render_template('index.html')
+    return render_template('index.html',project = project)
 
 @app.route('/upload', methods=['POST'])
 def get_image():
     image_b64 = request.values['imageBase64']
+    project = request.values['project']
     image_data = re.sub('^data:image/.+;base64,', '', image_b64)
     image_PIL = Image.open(BytesIO(base64.b64decode((image_data))))
     filename = request.values["filename"]
-    image_PIL.save(os.path.join(app.root_path,"static/data/annotations/",filename))
+    image_PIL.save(os.path.join(app.root_path,"static/data/",project,"annotations",filename))
 
     return "complete"
 
