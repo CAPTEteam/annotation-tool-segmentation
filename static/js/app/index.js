@@ -31,11 +31,13 @@ function(Pagination, Viewer, util) {
   }
 
   function render(data, params) {
+    console.log(data)
     var pagination = new Pagination(data.imageURLs.length, params);
     document.body.appendChild(pagination.render());
     document.body.appendChild(createLabelOptions(params, data.labels));
     for (var i = pagination.begin(); i < pagination.end(); ++i) {
       var project = document.getElementById("project").content
+      console.log(project)
       var viewer = new Viewer(data.imageURLs[i].replace("data","data/"+ project), data.annotationURLs[i].replace("data","data/"+ project), {
                                 width: (params.width || 240),
                                 height: (params.height || 320),
