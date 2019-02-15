@@ -11,7 +11,7 @@ app = Flask(__name__, static_url_path='')
 app.debug= True
 
 @app.route("/<project>")
-def hello():
+def hello(project):
     return render_template('index.html',project = project)
 
 @app.route('/upload', methods=['POST'])
