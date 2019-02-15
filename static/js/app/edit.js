@@ -208,10 +208,13 @@ function(Layer, Annotator, util) {
         spacer7 = document.createElement("div"),
         manualParagraph = document.createElement("p"),
         spacer9 = document.createElement("div"),
-        modelButton = document.createElement("input"),
-        spacer8 = document.createElement("div"),
         exportButton = document.createElement("input"),
+
+        spacer8 = document.createElement("div"),
         manualText;
+
+
+
     exportButton.type = "submit";
     exportButton.value = "Save (erase former annotations)";
     exportButton.className = "edit-sidebar-submit";
@@ -219,14 +222,12 @@ function(Layer, Annotator, util) {
       var filename = (data.annotationURLs) ?
           data.annotationURLs[params.id].split(/[\\/]/).pop() :
           params.id + ".png";
-var project = document.getElementById("project").content
         $.ajax({
             type: "POST",
             url:"/upload",
             data:{
             imageBase64 : annotator.export(),
-            filename:filename,
-            project:project
+            filename:filename
             }
           }).done(function(){console.log("sent")}); ;
     });
@@ -525,17 +526,14 @@ var project = document.getElementById("project").content
     var id = parseInt(params.id, 10);
     if (isNaN(id))
       throw("Invalid id");
-var project = document.getElementById("project").content
-    var annotator = new Annotator(data.imageURLs[id].replace("data","data/"+project), {
+    var annotator = new Annotator(data.imageURLs[id], {
           width: params.width,
           height: params.height,
           colormap: data.colormap,
           superpixelOptions: { method: "slic", regionSize: 25 },
           onload: function () {
-	var project = document.getElementById("project").content
-	console.log(project)
             if (data.annotationURLs)
-              annotator.import(data.annotationURLs[id].replace("data","data/"+project));
+              annotator.import(data.annotationURLs[id]);
             annotator.hide("boundary");
             boundaryFlash();
           },
@@ -555,7 +553,7 @@ var project = document.getElementById("project").content
           },
           onmousemove: highlightLabel
         }),
-        imageLayer = new Layer(data.imageURLs[id].replace("data","data/"+project), {
+        imageLayer = new Layer(data.imageURLs[id], {
           width: params.width,
           height: params.height
         });
