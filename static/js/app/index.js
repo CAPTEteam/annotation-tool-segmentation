@@ -38,6 +38,7 @@ function(Pagination, Viewer, util) {
     var project = document.getElementById("project").content
 
     for (var i = pagination.begin(); i < pagination.end(); ++i) {
+      console.log(data.imageURLs[i].replace("data","../data/"+ project))
       var viewer = new Viewer(data.imageURLs[i].replace("data","../data/"+ project), data.annotationURLs[i].replace("data","../data/"+ project), {
                                 width: (params.width || 240),
                                 height: (params.height || 320),
