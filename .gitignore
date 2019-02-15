@@ -1,5 +1,6 @@
 *.png
 *.jpg
 *.zip
-__pycache__
-ATVenv/
+ATVenv/*
+*.JPG
+static/data/*
