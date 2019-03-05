@@ -57,6 +57,7 @@ function(Layer, Annotator, util) {
 
   // Create the main content block.
   function createMainDisplay(params, data, annotator, imageLayer) {
+    // console.log(imageLayer);
     var container = document.createElement("div"),
         imageContainerSpacer = document.createElement("div"),
         imageContainer = document.createElement("div"),
@@ -66,9 +67,11 @@ function(Layer, Annotator, util) {
         sidebarContainer = document.createElement("div"),
         sidebar = createSidebar(params, data, annotator);
     imageContainerSpacer.className = "edit-image-top-menu";
+//    imageContainer.id = "image-layer";
     imageContainer.className = "edit-image-display";
     imageContainer.appendChild(imageContainerSpacer);
-    imageContainer.appendChild(imageLayer.canvas);
+    l = imageContainer.appendChild(imageLayer.canvas);
+    l.setAttribute("id", "image-layer")
     annotatorContainer.className = "edit-image-display";
     annotatorContainer.appendChild(annotatorTopMenu);
     annotatorContainer.appendChild(annotator.container);
@@ -105,6 +108,7 @@ function(Layer, Annotator, util) {
     zoomInButton.classList.add("edit-image-top-button");
     zoomInButton.addEventListener("click", function () {
       annotator.zoomIn();
+//      annotator.imageLayerZoomIn();
     });
     spacer1.className = "edit-image-top-spacer";
     boundaryButton.id = "boundary-button";
@@ -245,7 +249,7 @@ function(Layer, Annotator, util) {
       modelButton.appendChild(opt);
     })
     container.appendChild(modelButton)
-    console.log(container)
+    // console.log(container)
 
 
     modelButton.className = "edit-sidebar-submit";
@@ -260,10 +264,10 @@ function(Layer, Annotator, util) {
     spacer1.className = "edit-sidebar-spacer";
     undoButton.className = "edit-sidebar-button";
     undoButton.appendChild(document.createTextNode("undo"));
-    undoButton.addEventListener("click", function () { annotator.undo(); });
+    undoButton.addEventListener("click", function () { annotator.undo(); annotator._updateImageWindow(annotator.currentLabel); });
     redoButton.className = "edit-sidebar-button";
     redoButton.appendChild(document.createTextNode("redo"));
-    redoButton.addEventListener("click", function () { annotator.redo(); });
+    redoButton.addEventListener("click", function () { annotator.redo(); annotator._updateImageWindow(annotator.currentLabel); });
     spacer2.className = "edit-sidebar-spacer";
     denoiseButton.className = "edit-sidebar-button";
     denoiseButton.appendChild(document.createTextNode("denoise"));
@@ -385,6 +389,7 @@ function(Layer, Annotator, util) {
     pickButton.addEventListener("click", function () {
       var className = "edit-sidebar-button-selected";
       annotator.currentLabel = index;
+      annotator._updateImageWindow(index);
       var selectedElements = document.getElementsByClassName(className);
       for (var i = 0; i < selectedElements.length; ++i)
         selectedElements[i].classList.remove(className);
@@ -526,6 +531,7 @@ function(Layer, Annotator, util) {
     var id = parseInt(params.id, 10);
     if (isNaN(id))
       throw("Invalid id");
+    // console.log(data.imageURLs[id]);
     var annotator = new Annotator(data.imageURLs[id], {
           width: params.width,
           height: params.height,
