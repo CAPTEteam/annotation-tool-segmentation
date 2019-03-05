@@ -127,6 +127,8 @@ define(function() {
     var data = this.imageData.data;
     for (var i = 3; i < data.length; i += 4)
       data[i] = alpha;
+
+    // console.log(alpha)
     return this;
   };
 

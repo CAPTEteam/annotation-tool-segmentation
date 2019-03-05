@@ -27,7 +27,6 @@ function(indexPage, editPage, colormap, util) {
   function renderPage(renderer) {
     util.requestJSON(dataURL, function(data) {
       data.colormap = createColormap(params.label, data.labels);
-      console.log(data)
       renderer(data, params);
     });
   }

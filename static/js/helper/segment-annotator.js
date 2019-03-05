@@ -25,7 +25,7 @@ function (Layer, segmentation, morph) {
     this.colormap = options.colormap || [[255, 255, 255], [255, 0, 0]];
     this.boundaryColor = options.boundaryColor || [255, 255, 255];
     this.boundaryAlpha = options.boundaryAlpha || 127;
-    this.visualizationAlpha = options.visualizationAlpha || 144;
+    this.visualizationAlpha = options.visualizationAlpha || 0;
     this.highlightAlpha = options.highlightAlpha ||
                           Math.min(255, this.visualizationAlpha + 128);
     this.currentZoom = 1.0;
@@ -50,6 +50,12 @@ function (Layer, segmentation, morph) {
       onload: function () { annotator._initialize(options); },
       onerror: options.onerror
     });
+//     this.layers.mask.load(imageURL, {
+//      width: options.width,
+//      height: options.height,
+//      onload: function () { annotator._initialize(options); },
+//      onerror: options.onerror
+//    });
   }
 
   // Run superpixel segmentation.
@@ -124,6 +130,7 @@ function (Layer, segmentation, morph) {
     }
     if (pixels.length > 0)
       this._updateAnnotation(pixels, this.currentLabel);
+      this._displayMask(this.currentLabel);
     return this;
   };
 
@@ -223,6 +230,12 @@ function (Layer, segmentation, morph) {
     return this.zoom(this.currentZoom + (scale || 0.25));
   };
 
+//   Annotator.prototype.imageLayerZoomIn = function (scale) {
+//    var imageLayer = document.getElementById("image-layer")
+//    ctx = imageLayer.getContext("2d");
+//    //imageData = ctx.getImageData();
+//    console.log(imageLayer)
+//  };
   // Zoom out.
   Annotator.prototype.zoomOut = function (scale) {
     return this.zoom(this.currentZoom - (scale || 0.25));
@@ -248,6 +261,7 @@ function (Layer, segmentation, morph) {
     for (var i = 0; i < pixels.length; ++i)
       pixels[i] = 4 * i;
     this._updateAnnotation(pixels, result.data);
+    this._displayMask(result.data);
     return this;
   };
 
@@ -265,7 +279,8 @@ function (Layer, segmentation, morph) {
       superpixel: new Layer(options),
       visualization: new Layer(options),
       boundary: new Layer(options),
-      annotation: new Layer(options)
+      annotation: new Layer(options),
+//      mask: new Layer(options)
     };
     options.onload = onload;
     for (var key in this.layers) {
@@ -302,8 +317,9 @@ function (Layer, segmentation, morph) {
     options = options || {};
     if (!options.width)
       this._resizeLayers(options);
-    this._initializeAnnotationLayer();
+
     this._initializeVisualizationLayer();
+    this._initializeAnnotationLayer();
     this._initializeEvents();
     this.resetSuperpixels(options.superpixelOptions);
     if (typeof options.onload === "function")
@@ -316,6 +332,7 @@ function (Layer, segmentation, morph) {
     var canvas = this.layers.annotation.canvas,
         mousestate = { down: false, button: 0 },
         annotator = this;
+        imageLayer = document.getElementById("image-layer");
     canvas.oncontextmenu = function() { return false; };
     function updateIfActive(event) {
       var offset = annotator._getClickOffset(event),
@@ -338,9 +355,11 @@ function (Layer, segmentation, morph) {
         } else {
           if (annotator.mode === "brush" && event.button === 0) {
             annotator.brush(annotator._getClickPos(event), annotator.currentLabel);
+            annotator._displayMask(annotator.currentLabel);
           }
           if (annotator.mode === "pixel" && event.button === 0) {
             annotator.pixel(annotator._getClickPos(event), annotator.currentLabel);
+            annotator._displayMask(annotator.currentLabel);
           }
           if (event.button === 0 && annotator.mode === "polygon") {
             annotator._addPolygonPoint(event);
@@ -348,6 +367,7 @@ function (Layer, segmentation, morph) {
               annotator._addPolygonToAnnotation();
           } else if (annotator.mode === "superpixel") {
             annotator._updateAnnotation(pixels, annotator.currentLabel);
+            annotator._displayMask(annotator.currentLabel);
           }
           if (typeof annotator.onleftclick === "function")
             annotator.onleftclick.call(annotator, annotator.currentLabel);
@@ -358,6 +378,7 @@ function (Layer, segmentation, morph) {
     canvas.addEventListener('mouseup', updateIfActive);
     canvas.addEventListener('mouseleave', function () {
       annotator._updateHighlight(null);
+//      annotator._updateImageWindow(null);
       if (typeof annotator.onmousemove === "function") {
         annotator.onmousemove.call(annotator, null);
       }
@@ -395,12 +416,14 @@ function (Layer, segmentation, morph) {
   };
 
   Annotator.prototype._initializeAnnotationLayer = function () {
+    // console.log(this)
     var layer = this.layers.annotation;
     layer.resize(this.width, this.height);
     this.currentLabel = this.defaultLabel;
     layer.fill([this.defaultLabel, 0, 0, 0]);
     layer.render();
   };
+
 
   Annotator.prototype._initializeVisualizationLayer = function () {
     var layer = this.layers.visualization;
@@ -535,6 +558,7 @@ function (Layer, segmentation, morph) {
     }
     // update annotation.
     annotator._updateAnnotation(pixelsPolygon, annotator.currentLabel);
+    annotator._displayMask(annotator.currentLabel);
     annotator._emptyPolygonPoints();
   };
 
@@ -572,6 +596,88 @@ function (Layer, segmentation, morph) {
     this.mode = mode;
   };
 
+  Annotator.prototype._updateImageWindow = function (label) {
+      var visualizationData = this.layers.visualization.imageData.data,
+        boundaryData = this.layers.boundary.imageData.data,
+        annotationData = this.layers.annotation.imageData.data,
+        imageLayer = document.getElementById("image-layer"),
+        i,
+        color,
+        offset;
+
+    ctx = imageLayer.getContext("2d");
+    var newImg = ctx.createImageData(this.layers.visualization.imageData.width, this.layers.visualization.imageData.height, 4);
+    var rgba = this.layers.image.imageData.data;
+
+    for (var i = newImg.data.length; --i >= 0; ) // filling the canvas with black pixela
+      newImg.data[i] = 0;
+
+    for (var i = 3; i < newImg.data.length; i += 4) // setting alpha value
+      newImg.data[i] = 255;
+
+    var pixels = [];
+    for (var i = 0; i < annotationData.length; i += 4) {
+      var currentLabel = _getEncodedLabel(annotationData, i);
+      if (currentLabel === label)
+        pixels.push(i);
+    }
+
+    if (pixels !== null) {
+      for (i = 0; i < pixels.length; ++i) {
+//        console.log(_getEncodedLabel(annotationData, offset));
+        offset = pixels[i];
+        newImg.data[offset + 0] = rgba[offset + 0];
+        newImg.data[offset + 1] = rgba[offset + 1];
+        newImg.data[offset + 2] = rgba[offset + 2];
+        newImg.data[offset + 3] = 255;
+      }
+    }
+    ctx.putImageData(newImg, 0, 0);
+
+  };
+
+  // display the mask of the currently selected class in the ImageWindow
+  Annotator.prototype._displayMask = function (label) {
+      var visualizationData = this.layers.visualization.imageData.data,
+        boundaryData = this.layers.boundary.imageData.data,
+        annotationData = this.layers.annotation.imageData.data,
+        imageLayer = document.getElementById("image-layer"),
+        i,
+        color,
+        offset;
+
+    ctx = imageLayer.getContext("2d");
+    var newImg = ctx.createImageData(this.layers.visualization.imageData.width, this.layers.visualization.imageData.height, 4);
+    var rgba = this.layers.image.imageData.data;
+
+    for (var i = newImg.data.length; --i >= 0; ) // filling the canvas with black pixela
+      newImg.data[i] = 0;
+
+    for (var i = 3; i < newImg.data.length; i += 4) // setting alpha value
+      newImg.data[i] = 255;
+
+    var pixels = [];
+    for (var i = 0; i < annotationData.length; i += 4) {
+      var currentLabel = _getEncodedLabel(annotationData, i);
+      if (currentLabel !== label)
+        pixels.push(i);
+    }
+
+    if (pixels !== null) {
+      for (i = 0; i < pixels.length; ++i) {
+//        console.log(_getEncodedLabel(annotationData, offset));
+        offset = pixels[i];
+        newImg.data[offset + 0] = rgba[offset + 0];
+        newImg.data[offset + 1] = rgba[offset + 1];
+        newImg.data[offset + 2] = rgba[offset + 2];
+        newImg.data[offset + 3] = 255;
+      }
+    }
+    ctx.putImageData(newImg, 0, 0);
+
+  };
+
+
   Annotator.prototype._updateHighlight = function (pixels) {
     var visualizationData = this.layers.visualization.imageData.data,
         boundaryData = this.layers.boundary.imageData.data,
@@ -604,6 +710,7 @@ function (Layer, segmentation, morph) {
         }
       }
     }
+
     this.layers.visualization.render();
     this.layers.boundary.render();
     if (typeof this.onhighlight === "function")
@@ -611,15 +718,20 @@ function (Layer, segmentation, morph) {
   };
 
   Annotator.prototype._fillPixels = function (pixels, labels) {
+    // console.log(labels.length);
+    // console.log(pixels[0]);
     if (pixels.length !== labels.length)
       throw "Invalid fill: " + pixels.length + " !== " + labels.length;
     var annotationData = this.layers.annotation.imageData.data,
         visualizationData = this.layers.visualization.imageData.data;
+    // console.log(visualizationData.length);
     for (var i = 0; i < pixels.length; ++i) {
       var offset = pixels[i],
           label = labels[i],
           color = this.colormap[label];
       _setEncodedLabel(annotationData, offset, label);
+      //console.log(this);
+
       visualizationData[offset + 0] = color[0];
       visualizationData[offset + 1] = color[1];
       visualizationData[offset + 2] = color[2];
@@ -700,10 +812,12 @@ function (Layer, segmentation, morph) {
   }
 
   function _setEncodedLabel(array, offset, label) {
+    // console.log(array[offset],array[offset+1],array[offset+2],array[offset+3]);
     array[offset + 0] = label & 255;
     array[offset + 1] = (label >>> 8) & 255;
     array[offset + 2] = (label >>> 16) & 255;
     array[offset + 3] = 255;
+    // console.log(array[offset+0],array[offset+1],array[offset+2],array[offset+3]);
   }
 
   return Annotator;
