@@ -4,3 +4,5 @@
 ATVenv/*
 *.JPG
 static/data/*
+
+__pycache__/
