@@ -130,7 +130,7 @@ function (Layer, segmentation, morph) {
     }
     if (pixels.length > 0)
       this._updateAnnotation(pixels, this.currentLabel);
-      this._updateImageWindow(this.currentLabel);
+      this._displayMask(this.currentLabel);
     return this;
   };
 
@@ -261,7 +261,7 @@ function (Layer, segmentation, morph) {
     for (var i = 0; i < pixels.length; ++i)
       pixels[i] = 4 * i;
     this._updateAnnotation(pixels, result.data);
-    this._updateImageWindow(result.data);
+    this._displayMask(result.data);
     return this;
   };
 
@@ -355,11 +355,11 @@ function (Layer, segmentation, morph) {
         } else {
           if (annotator.mode === "brush" && event.button === 0) {
             annotator.brush(annotator._getClickPos(event), annotator.currentLabel);
-            annotator._updateImageWindow(annotator.currentLabel);
+            annotator._displayMask(annotator.currentLabel);
           }
           if (annotator.mode === "pixel" && event.button === 0) {
             annotator.pixel(annotator._getClickPos(event), annotator.currentLabel);
-            annotator._updateImageWindow(annotator.currentLabel);
+            annotator._displayMask(annotator.currentLabel);
           }
           if (event.button === 0 && annotator.mode === "polygon") {
             annotator._addPolygonPoint(event);
@@ -367,7 +367,7 @@ function (Layer, segmentation, morph) {
               annotator._addPolygonToAnnotation();
           } else if (annotator.mode === "superpixel") {
             annotator._updateAnnotation(pixels, annotator.currentLabel);
-            annotator._updateImageWindow(annotator.currentLabel);
+            annotator._displayMask(annotator.currentLabel);
           }
           if (typeof annotator.onleftclick === "function")
             annotator.onleftclick.call(annotator, annotator.currentLabel);
@@ -558,7 +558,7 @@ function (Layer, segmentation, morph) {
     }
     // update annotation.
     annotator._updateAnnotation(pixelsPolygon, annotator.currentLabel);
-    annotator._updateImageWindow(annotator.currentLabel);
+    annotator._displayMask(annotator.currentLabel);
     annotator._emptyPolygonPoints();
   };
 
@@ -635,6 +635,48 @@ function (Layer, segmentation, morph) {
     ctx.putImageData(newImg, 0, 0);
 
   };
+
+  // display the mask of the currently selected class in the ImageWindow
+  Annotator.prototype._displayMask = function (label) {
+      var visualizationData = this.layers.visualization.imageData.data,
+        boundaryData = this.layers.boundary.imageData.data,
+        annotationData = this.layers.annotation.imageData.data,
+        imageLayer = document.getElementById("image-layer"),
+        i,
+        color,
+        offset;
+
+    ctx = imageLayer.getContext("2d");
+    var newImg = ctx.createImageData(this.layers.visualization.imageData.width, this.layers.visualization.imageData.height, 4);
+    var rgba = this.layers.image.imageData.data;
+
+    for (var i = newImg.data.length; --i >= 0; ) // filling the canvas with black pixela
+      newImg.data[i] = 0;
+
+    for (var i = 3; i < newImg.data.length; i += 4) // setting alpha value
+      newImg.data[i] = 255;
+
+    var pixels = [];
+    for (var i = 0; i < annotationData.length; i += 4) {
+      var currentLabel = _getEncodedLabel(annotationData, i);
+      if (currentLabel !== label)
+        pixels.push(i);
+    }
+
+    if (pixels !== null) {
+      for (i = 0; i < pixels.length; ++i) {
+//        console.log(_getEncodedLabel(annotationData, offset));
+        offset = pixels[i];
+        newImg.data[offset + 0] = rgba[offset + 0];
+        newImg.data[offset + 1] = rgba[offset + 1];
+        newImg.data[offset + 2] = rgba[offset + 2];
+        newImg.data[offset + 3] = 255;
+      }
+    }
+    ctx.putImageData(newImg, 0, 0);
+
+  };
+
 
   Annotator.prototype._updateHighlight = function (pixels) {
     var visualizationData = this.layers.visualization.imageData.data,

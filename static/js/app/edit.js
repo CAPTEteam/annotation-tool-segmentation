@@ -98,7 +98,9 @@ function(Layer, Annotator, util) {
         spacer2 = document.createElement("span"),
         alphaMinusButton = document.createElement("div"),
         imageButton = document.createElement("div"),
-        alphaPlusButton = document.createElement("div");
+        alphaPlusButton = document.createElement("div"),
+        spacer3 = document.createElement("span"),
+        maskButton =  document.createElement("div");
     zoomOutButton.appendChild(document.createTextNode("-"));
     zoomOutButton.classList.add("edit-image-top-button");
     zoomOutButton.addEventListener("click", function () {
@@ -156,6 +158,22 @@ function(Layer, Annotator, util) {
     alphaPlusButton.addEventListener("click", function () {
       annotator.lessAlpha();
     });
+
+    spacer3.className = "edit-image-top-spacer";
+    maskButton.id = "mask-button";
+    maskButton.setAttribute("value", "1");
+    console.log(maskButton.getAttribute("value"))
+    maskButton.className = "edit-image-top-button";
+    maskButton.appendChild(document.createTextNode("toggle-mask"));
+    maskButton.addEventListener("click", function () {
+      if (maskButton.getAttribute("value") == 1) {
+        maskButton.setAttribute("value", "2");
+        annotator._updateImageWindow(annotator.currentLabel);}
+      else if (maskButton.getAttribute("value") == 2){
+        annotator._displayMask(annotator.currentLabel);
+        maskButton.setAttribute("value", "1");}
+
+    });
     //
     container.className = "edit-image-top-menu";
     container.appendChild(zoomOutButton);
@@ -168,6 +186,8 @@ function(Layer, Annotator, util) {
     container.appendChild(alphaMinusButton);
     container.appendChild(imageButton);
     container.appendChild(alphaPlusButton);
+    container.appendChild(spacer3);
+    container.appendChild(maskButton);
     return container;
   }
 
