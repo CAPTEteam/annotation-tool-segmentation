@@ -25,7 +25,7 @@ function (Layer, segmentation, morph) {
     this.colormap = options.colormap || [[255, 255, 255], [255, 0, 0]];
     this.boundaryColor = options.boundaryColor || [255, 255, 255];
     this.boundaryAlpha = options.boundaryAlpha || 127;
-    this.visualizationAlpha = options.visualizationAlpha || 144;
+    this.visualizationAlpha = options.visualizationAlpha || 0;
     this.highlightAlpha = options.highlightAlpha ||
                           Math.min(255, this.visualizationAlpha + 128);
     this.currentZoom = 1.0;
