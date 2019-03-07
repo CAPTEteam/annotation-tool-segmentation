@@ -1,4 +1,4 @@
-from flask import Flask, redirect, url_for, request, render_template
+from flask import Flask, redirect, url_for, request, render_template, session
 from PIL import Image
 import numpy as np
 import base64
@@ -6,9 +6,23 @@ import re
 from io import BytesIO
 import os
 from werkzeug import secure_filename
+from models.users.views import user_blueprint
 
 app = Flask(__name__, static_url_path='')
 app.debug= True
+
+app.secret_key = "65re4g56er4"
+# Registration of Blueprint path 
+app.register_blueprint(user_blueprint, url_prefix="/users")
+
+@app.route('/')
+def home():
+    # There is no more home for now
+    # Either the user is already logged and it's showing the systems dashboard, either it asks to log
+    if True:
+        return render_template('users/login.html')
+    else:
+        return redirect(session['project'])
 
 @app.route("/<project>")
 def hello(project):
