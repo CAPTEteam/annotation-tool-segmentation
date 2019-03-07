@@ -1,0 +1,6 @@
+{
+    "models":["model_1","model_2"],
+    "imageURLs": ["data/images/image_1.JPG", "data/images/image_2.JPG"],
+    "labels": ["Background", "Vegetation"],
+    "annotationURLs": ["data/annotations/image_1.JPG","data/annotations/image_1.JPG"]
+}
