@@ -64,6 +64,7 @@
   /* font-family: serif; */
   padding: 0 0.5em;
   width: 100%;
+  color: #eee;
 }
 .edit-sidebar-button {
   position: relative;
@@ -175,4 +176,13 @@
 .edit-top-menu-block {
   display: inline-block;
   margin: 0 .5em;
+}
+
+body {
+  background-color: #333333;
+  color:  #0095dd;
+}
+
+a {
+  color: #0095dd;
 }
