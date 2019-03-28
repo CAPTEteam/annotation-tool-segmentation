@@ -576,6 +576,7 @@ define(['../image/layer',
           for (i = 0; i < elements.length; ++i)
             elements[i].classList.remove(legendActiveClass);
           for (i = 0; i < activeLabels.length; ++i)
+	    console.log(i)
             elements[activeLabels[i]].classList.add(legendActiveClass);
         },
         onrightclick: function (label) {

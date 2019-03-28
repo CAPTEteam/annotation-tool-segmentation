@@ -152,6 +152,7 @@ define(['../image/layer',
     Annotator.prototype.import = function (annotationURL, options) {
       options = options || {};
       var annotator = this;
+console.log(annotator.colormap)
       this.layers.annotation.load(annotationURL, {
         onload: function () {
           if (options.grayscale)
@@ -769,7 +770,10 @@ define(['../image/layer',
       if (this.currentPixels !== null) {
         for (i = 0; i < this.currentPixels.length; ++i) {
           offset = this.currentPixels[i];
+
           color = this.colormap[_getEncodedLabel(annotationData, offset)];
+console.log("ici")
+console.log(this.classList)
           visualizationData[offset + 0] = color[0];
           visualizationData[offset + 1] = color[1];
           visualizationData[offset + 2] = color[2];
